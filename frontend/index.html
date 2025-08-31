@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Contacts</title></head>
+<body>
+  <h1>Contacts</h1>
+  <form id="form">
+    <input name="name" placeholder="Nome" required />
+    <input name="email" placeholder="Email" required />
+    <input name="age" type="number" placeholder="Idade" />
+    <button type="submit">Criar</button>
+  </form>
+  <ul id="list"></ul>
+
+  <script>
+    const apiBase = '/'; // se front hospedado no mesmo host da API; se remoto, coloque URL completa
+    async function load() {
+      const res = await fetch(apiBase + 'contacts');
+      const data = await res.json();
+      const ul = document.getElementById('list');
+      ul.innerHTML = data.map(it => `<li>${it.name} — ${it.email} — ${it.age} — ${new Date(it.joined_on).toLocaleDateString()}</li>`).join('');
+    }
+    document.getElementById('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const body = { name: f.name.value, email: f.email.value, age: f.age.value ? parseInt(f.age.value) : null };
+      await fetch(apiBase + 'contacts', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      f.reset(); load();
+    });
+    load();
+  </script>
+</body>
+</html>
