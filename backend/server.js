@@ -1,18 +1,27 @@
-const { Sequelize } = require('sequelize');
-require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const { sequelize } = require('./db'); // importa conexão
+const contactsRouter = require('./routes/contacts'); // importa rotas
 
-const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS, {
-  host: process.env.DB_HOST,
-  dialect: 'postgres',
-  port: process.env.DB_PORT,
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
-    }
-  }
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// registra a rota
+app.use('/contacts', contactsRouter);
+
+// rota raiz só pra teste
+app.get('/', (req, res) => {
+  res.send('API está no ar 🚀');
 });
 
-sequelize.authenticate()
-  .then(() => console.log('Conectado ao RDS!'))
-  .catch(err => console.error('Erro ao conectar DB', err));
+// conecta no banco e só então inicia servidor
+sequelize.sync().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
+  });
+}).catch(err => {
+  console.error('Erro ao conectar no banco', err);
+});
